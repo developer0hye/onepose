@@ -1,4 +1,4 @@
-# one-line-pose
+# onepose
 
 human pose estimation within one line
 
