@@ -1,6 +1,6 @@
 # onepose
 
-human pose estimation within one line
+human **pose** estimation within **one line**
 
 ## Usage
 ```python
