@@ -15,3 +15,10 @@ onepose.model("vitpose-s", "Luffy.png")
 
 One Piece's Luffy Pose Prediction by onepose
 
+# References
+
+[ViTAE-Transformer/ViTPose](https://github.com/ViTAE-Transformer/ViTPose)
+
+[jaehyunnn/ViTPose_pytorch](https://github.com/jaehyunnn/ViTPose_pytorch)
+
+[JunkyByte/easy_ViTPose](https://github.com/JunkyByte/easy_ViTPose)
