@@ -610,37 +610,43 @@ class NormalizeTensor(BaseTransform):
 
 model_config = {
     'ViTPose_base_simple_coco': {
-        'cfg': 'ViTPose_base_simple_coco_256x192.py',
+        'model_cfg': 'ViTPose_base_simple_coco_256x192.py',
+        'dataset_cfg': 'coco.py',
         'pth': 'vitpose-b-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-b-simple_half.pth',
         'hash': '0408c829e344fe6f9d61eb16db5c863f'
     },
     'ViTPose_large_simple_coco': {
-        'cfg': 'ViTPose_large_simple_coco_256x192.py',
+        'model_cfg': 'ViTPose_large_simple_coco_256x192.py',
+        'dataset_cfg': 'coco.py',
         'pth': 'vitpose-l-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-l-simple_half.pth',
         'hash': '6b35d98cdf0ac4838dbe9f4bb98dd38f'
     },
     'ViTPose_huge_simple_coco': {
-        'cfg': 'ViTPose_huge_simple_coco_256x192.py',
+        'model_cfg': 'ViTPose_huge_simple_coco_256x192.py',
+        'dataset_cfg': 'coco.py',
         'pth': 'vitpose-h-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-h-simple_half.pth',
         'hash': '319c1bf933f677bce2ad33da21304866'
     },
     'ViTPose_base_mpii': {
-        'cfg': 'ViTPose_base_mpii_256x192.py',
+        'model_cfg': 'ViTPose_base_mpii_256x192.py',
+        'dataset_cfg': 'mpii.py',
         'pth': 'vitpose-b-multi-mpii_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-b-multi-mpii_half.pth',
         'hash': '475eaab9c8fd78df77729cac7229c3e7'
     },
     'ViTPose_large_mpii': {
-        'cfg': 'ViTPose_large_mpii_256x192.py',
+        'model_cfg': 'ViTPose_large_mpii_256x192.py',
+        'dataset_cfg': 'mpii.py',
         'pth': 'vitpose-l-multi-mpii_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-l-multi-mpii_half.pth',
         'hash': '1c7a3a6d40e775b2ca376090bf8f55ed'
     },
     'ViTPose_huge_mpii': {
         'cfg': 'ViTPose_huge_mpii_256x192.py',
+        'dataset_cfg': 'mpii.py',
         'pth': 'vitpose-h-multi-mpii_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-h-multi-mpii_half.pth',
         'hash': '38a0335fbc749c1bfb6b60f0b13e5c93'
@@ -661,8 +667,8 @@ class Model(nn.Module):
 
         file_path = pathlib.Path(os.path.abspath(__file__)).parent
         
-        self.cfg = read_cfg(os.path.join(file_path, 'configs', model_config[model_name]['cfg']))
-        self.model = vitpose.ViTPose(self.cfg.model)
+        self.model_cfg = read_cfg(os.path.join(file_path, 'configs', model_config[model_name]['model_cfg']))
+        self.model = vitpose.ViTPose(self.model_cfg.model)
         
         download_weights(model_name)
         
@@ -670,6 +676,9 @@ class Model(nn.Module):
         self.model.load_state_dict(torch.load(ckpt, map_location='cpu'))
         self.model.eval()
         
+        dataset_cfg = read_cfg(os.path.join(file_path.parent, 'datasets', model_config[model_name]['dataset_cfg']))
+        self.keypoint_info = dataset_cfg.dataset_info['keypoint_info']
+
     @torch.no_grad()
     @torch.inference_mode()
     def forward(self, x: np.ndarray) -> np.ndarray:
@@ -679,13 +688,13 @@ class Model(nn.Module):
         device = next(self.parameters()).device
         
         img_height, img_width = x.shape[:2]
-        center, scale = _box2cs(self.cfg.data_cfg['image_size'], [0, 0, img_width, img_height])      
+        center, scale = _box2cs(self.model_cfg.data_cfg['image_size'], [0, 0, img_width, img_height])      
 
         results = {'img': x,
                    'rotation': 0,
                    'center': center,
                    'scale': scale,
-                   'image_size': np.array(self.cfg.data_cfg['image_size']),
+                   'image_size': np.array(self.model_cfg.data_cfg['image_size']),
                    }
 
         results = self.transforms(results)
