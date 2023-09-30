@@ -13,7 +13,7 @@ img = cv2.imread("sample.png")
 keypoints = onepose.create_model().to("cuda")(img)
 ```
 
-![output](https://github.com/developer0hye/onepose/assets/35001605/373de9d0-a2ea-4b34-8b6c-156e5de71377)
+![output](./onepose/assets/sample_vitpose_h_simple_coco_output.png)
 
 One Piece's Luffy pose predicted by onepose
 
@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
 Notice that occluded key points are plotted in red. You can discard these points using confidence score.
 
-![output](https://github.com/developer0hye/onepose/assets/35001605/efad3e3f-7ab7-4521-bec1-d5cb2f9007a2)
+![output](./onepose/assets/\occluded_sample_vitpose_h_simple_coco_output.png)
 
 
 ## Print supported models
