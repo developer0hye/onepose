@@ -719,9 +719,6 @@ def download_weights(model_name: str = 'ViTPose_huge_simple_coco') -> None:
             return True
         os.remove(ckpt)
 
-    print(url)
-    import pdb; pdb.set_trace()
-    
     with DownloadProgressBar(unit='B', unit_scale=True,
                              miniters=1, desc=url.split('/')[-1]) as t:
         urllib.request.urlretrieve(url, filename=ckpt, reporthook=t.update_to)
