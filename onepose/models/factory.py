@@ -626,7 +626,25 @@ model_config = {
         'pth': 'vitpose-h-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-h-simple_half.pth',
         'hash': '319c1bf933f677bce2ad33da21304866'
-    }
+    },
+    'ViTPose_base_mpii': {
+        'cfg': 'ViTPose_base_mpii_256x192.py',
+        'pth': 'vitpose-b-multi-mpii_half.pth',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-b-multi-mpii_half.pth',
+        'hash': '475eaab9c8fd78df77729cac7229c3e7'
+    },
+    'ViTPose_large_mpii': {
+        'cfg': 'ViTPose_large_mpii_256x192.py',
+        'pth': 'vitpose-l-multi-mpii_half.pth',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-l-multi-mpii_half.pth',
+        'hash': '1c7a3a6d40e775b2ca376090bf8f55ed'
+    },
+    'ViTPose_huge_mpii': {
+        'cfg': 'ViTPose_huge_mpii_256x192.py',
+        'pth': 'vitpose-h-multi-mpii_half.pth',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-h-multi-mpii_half.pth',
+        'hash': '38a0335fbc749c1bfb6b60f0b13e5c93'
+    },
 }
 
 class Model(nn.Module):
@@ -640,16 +658,18 @@ class Model(nn.Module):
             ToTensor(),
             NormalizeTensor()
         ])
-        
+
         file_path = pathlib.Path(os.path.abspath(__file__)).parent
         
         self.cfg = read_cfg(os.path.join(file_path, 'configs', model_config[model_name]['cfg']))
         self.model = vitpose.ViTPose(self.cfg.model)
         
         download_weights(model_name)
+        
         ckpt = os.path.join(file_path, 'weights', model_config[model_name]['pth'])
         self.model.load_state_dict(torch.load(ckpt, map_location='cpu'))
-
+        self.model.eval()
+        
     @torch.no_grad()
     @torch.inference_mode()
     def forward(self, x: np.ndarray) -> np.ndarray:
