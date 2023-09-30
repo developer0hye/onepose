@@ -3,7 +3,7 @@
 Human **pose** estimation within **one line**
 
 ```bash
-pip install onepose
+pip install git+https://github.com/developer0hye/onepose.git
 ```
 
 ```python
