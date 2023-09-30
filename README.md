@@ -49,6 +49,9 @@ Notice that occluded key points are plotted in red. You can discard these points
 ![occluded_sample_vitpose_h_simple_coco_output](./onepose/assets/occluded_sample_vitpose_h_simple_coco_output.png)
 
 ## Multiple-person pose estimation with YOLOv8
+```bash
+pip install ultralytics
+```
 ```python
 import cv2
 from ultralytics import YOLO
