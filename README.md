@@ -43,12 +43,17 @@ if __name__ == '__main__':
     cv2.imshow('img', img)
     cv2.waitKey(0)
 ```
-### Results
 
 Notice that occluded key points are plotted in red. You can discard these points using confidence score.
 
 ![output](https://github.com/developer0hye/onepose/assets/35001605/efad3e3f-7ab7-4521-bec1-d5cb2f9007a2)
 
+
+## Print supported models
+```python
+import onepose
+print(onepose.list_models()) # ['ViTPose_base_simple_coco', 'ViTPose_large_simple_coco', 'ViTPose_huge_simple_coco', ...]
+```
 
 # References
 
