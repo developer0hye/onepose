@@ -1,0 +1,1 @@
+from onepose.models.vitpose.model import ViTPose
