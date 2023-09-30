@@ -104,6 +104,8 @@ print(onepose.list_models()) # ['ViTPose_base_simple_coco', 'ViTPose_large_simpl
 
 # References
 
+[open-mmlab/mmpose](https://github.com/open-mmlab/mmpose)
+
 [ViTAE-Transformer/ViTPose](https://github.com/ViTAE-Transformer/ViTPose)
 
 [jaehyunnn/ViTPose_pytorch](https://github.com/jaehyunnn/ViTPose_pytorch)
