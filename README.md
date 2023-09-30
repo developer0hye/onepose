@@ -27,18 +27,19 @@ import onepose
 if __name__ == '__main__':
     img = cv2.imread('sample.png')
     model = onepose.create_model()
-    out = model(img)
-    num_keypoints = len(out['points'])
+
+    keypoints = model(img)
+    num_keypoints = len(keypoints['points'])
     
     for i in range(num_keypoints):
-        print(f"Point {i} (x, y)  : {out['points'][i]} confidence: {out['confidence'][i]}")
+        print(f"Point {i} (x, y)  : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
         
-        if out['confidence'][i] < 0.5:
+        if keypoints['confidence'][i] < 0.5:
             color = (0, 0, 255)
         else:
             color = (0, 255, 0)
         
-        cv2.circle(img, (int(out['points'][i][0]), int(out['points'][i][1])), 5, color, -1)
+        cv2.circle(img, (int(keypoints['points'][i][0]), int(keypoints['points'][i][1])), 5, color, -1)
     cv2.imshow('img', img)
     cv2.waitKey(0)
 ```
