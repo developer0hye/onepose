@@ -1,6 +1,6 @@
 # onepose
 
-Human **pose** estimation within **one line**
+Human **pose** estimation within **one line** based on [ViTPose](https://github.com/ViTAE-Transformer/ViTPose)
 
 ```bash
 pip install git+https://github.com/developer0hye/onepose.git
