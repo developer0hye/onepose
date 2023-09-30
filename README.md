@@ -48,6 +48,50 @@ Notice that occluded key points are plotted in red. You can discard these points
 
 ![occluded_sample_vitpose_h_simple_coco_output](./onepose/assets/occluded_sample_vitpose_h_simple_coco_output.png)
 
+## Multiple-person pose estimation with YOLOv8
+```python
+import cv2
+from ultralytics import YOLO
+import onepose
+
+detection_model = YOLO("yolov8m.pt")
+pose_estimiation_model = onepose.create_model()
+
+img = cv2.imread("multiple_person_sample.png")
+draw_img = img.copy()
+
+results = detection_model(img)[0]
+boxes = results.boxes.xyxy
+clses = results.boxes.cls
+probs = results.boxes.conf
+
+for cls, box, prob in zip(clses, boxes, probs):
+    if cls != 0:
+        continue
+
+    x1, y1, x2, y2 = box
+    # crop image
+    person_img = img[int(y1):int(y2), int(x1):int(x2)]
+    cv2.rectangle(draw_img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 3)
+    
+    keypoints = pose_estimiation_model(person_img)
+    num_keypoints = len(keypoints['points'])
+    
+    for i in range(num_keypoints):
+        print(f"Point {i} (x, y)  : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
+        
+        if keypoints['confidence'][i] < 0.5:
+            color = (0, 0, 255)
+        else:
+            color = (0, 255, 0)
+        
+        cv2.circle(draw_img, (int(keypoints['points'][i][0] + x1), int(keypoints['points'][i][1] + y1)), 3, color, -1)
+
+cv2.imshow("draw_img", draw_img)
+cv2.waitKey(0)
+```
+![multiple_person_sample_vitpose_h_simple_coco_output](./onepose/assets/multiple_person_sample_vitpose_h_simple_coco_output.png)
+
 
 ## Print supported models
 ```python
