@@ -19,7 +19,7 @@ One Piece's Luffy pose predicted by onepose
 
 # Examples
 
-## Plot keypoints on an image
+## Plot key points on an image
 ```python
 import cv2
 import onepose
