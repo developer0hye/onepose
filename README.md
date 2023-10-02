@@ -122,6 +122,12 @@ import onepose
 print(onepose.list_models()) # ['ViTPose_base_simple_coco', 'ViTPose_large_simple_coco', 'ViTPose_huge_simple_coco', ...]
 ```
 
+## Create a model
+```python
+import onepose
+model = onepose.create_model('ViTPose_huge_simple_coco')
+```
+
 # References
 
 [open-mmlab/mmpose](https://github.com/open-mmlab/mmpose)
