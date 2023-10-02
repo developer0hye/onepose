@@ -19,7 +19,7 @@ One Piece's Luffy pose predicted by onepose
 
 # Examples
 
-## Plot keypoints on an image
+## Plot key points on an image
 ```python
 import cv2
 import onepose
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     num_keypoints = len(keypoints['points'])
     
     for i in range(num_keypoints):
-        print(f"Point {i} (x, y)  : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
+        print(f"Point {i} {model.keypoint_info[i]} (x, y) : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
         
         if keypoints['confidence'][i] < 0.5:
             color = (0, 0, 255)
@@ -47,6 +47,26 @@ if __name__ == '__main__':
 Notice that occluded key points are plotted in red. You can discard these points using confidence score.
 
 ![occluded_sample_vitpose_h_simple_coco_output](./onepose/assets/occluded_sample_vitpose_h_simple_coco_output.png)
+
+```python
+Point 0 {'name': 'nose', 'id': 0, 'color': [51, 153, 255], 'type': 'upper', 'swap': ''} (x, y) : [139.64694 137.86743] confidence: [0.97471446]
+Point 1 {'name': 'left_eye', 'id': 1, 'color': [51, 153, 255], 'type': 'upper', 'swap': 'right_eye'} (x, y) : [166.26282  121.430725] confidence: [0.90367746]       
+Point 2 {'name': 'right_eye', 'id': 2, 'color': [51, 153, 255], 'type': 'upper', 'swap': 'left_eye'} (x, y) : [113.557556 121.25748 ] confidence: [0.93930066]       
+Point 3 {'name': 'left_ear', 'id': 3, 'color': [51, 153, 255], 'type': 'upper', 'swap': 'right_ear'} (x, y) : [194.79327 137.52954] confidence: [0.8964122]
+Point 4 {'name': 'right_ear', 'id': 4, 'color': [51, 153, 255], 'type': 'upper', 'swap': 'left_ear'} (x, y) : [ 84.58154 136.81473] confidence: [0.90676653]
+Point 5 {'name': 'left_shoulder', 'id': 5, 'color': [0, 255, 0], 'type': 'upper', 'swap': 'right_shoulder'} (x, y) : [227.78476 259.47287] confidence: [0.8609412]   
+Point 6 {'name': 'right_shoulder', 'id': 6, 'color': [255, 128, 0], 'type': 'upper', 'swap': 'left_shoulder'} (x, y) : [ 52.88922 256.38934] confidence: [0.83017635]
+Point 7 {'name': 'left_elbow', 'id': 7, 'color': [0, 255, 0], 'type': 'upper', 'swap': 'right_elbow'} (x, y) : [269.67554 397.33008] confidence: [0.7196459]
+Point 8 {'name': 'right_elbow', 'id': 8, 'color': [255, 128, 0], 'type': 'upper', 'swap': 'left_elbow'} (x, y) : [ 12.287186 379.43762 ] confidence: [0.65044713]    
+Point 9 {'name': 'left_wrist', 'id': 9, 'color': [0, 255, 0], 'type': 'upper', 'swap': 'right_wrist'} (x, y) : [291.44168 401.09717] confidence: [0.0140133]
+Point 10 {'name': 'right_wrist', 'id': 10, 'color': [255, 128, 0], 'type': 'upper', 'swap': 'left_wrist'} (x, y) : [ -9.994644 397.6245  ] confidence: [0.01367151]  
+Point 11 {'name': 'left_hip', 'id': 11, 'color': [0, 255, 0], 'type': 'lower', 'swap': 'right_hip'} (x, y) : [189.8435  401.15857] confidence: [0.04964036]
+Point 12 {'name': 'right_hip', 'id': 12, 'color': [255, 128, 0], 'type': 'lower', 'swap': 'left_hip'} (x, y) : [ 89.0609  401.10492] confidence: [0.02243446]
+Point 13 {'name': 'left_knee', 'id': 13, 'color': [0, 255, 0], 'type': 'lower', 'swap': 'right_knee'} (x, y) : [286.65494 397.4558 ] confidence: [0.04406731]
+Point 14 {'name': 'right_knee', 'id': 14, 'color': [255, 128, 0], 'type': 'lower', 'swap': 'left_knee'} (x, y) : [ 97.916   398.36865] confidence: [0.02304012]
+Point 15 {'name': 'left_ankle', 'id': 15, 'color': [0, 255, 0], 'type': 'lower', 'swap': 'right_ankle'} (x, y) : [151.2844  129.83142] confidence: [0.01141046]
+Point 16 {'name': 'right_ankle', 'id': 16, 'color': [255, 128, 0], 'type': 'lower', 'swap': 'left_ankle'} (x, y) : [ 91.45804 108.1178 ] confidence: [0.0140612]
+```
 
 ## Multiple-person pose estimation with YOLOv8
 ```bash
@@ -100,6 +120,12 @@ cv2.waitKey(0)
 ```python
 import onepose
 print(onepose.list_models()) # ['ViTPose_base_simple_coco', 'ViTPose_large_simple_coco', 'ViTPose_huge_simple_coco', ...]
+```
+
+## Create a model
+```python
+import onepose
+model = onepose.create_model('ViTPose_huge_simple_coco')
 ```
 
 # References
