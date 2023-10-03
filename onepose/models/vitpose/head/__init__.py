@@ -1,0 +1,2 @@
+from onepose.models.vitpose.head.topdown_heatmap_base_head import TopdownHeatmapBaseHead
+from onepose.models.vitpose.head.topdown_heatmap_simple_head import TopdownHeatmapSimpleHead
