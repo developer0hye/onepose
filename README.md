@@ -19,7 +19,26 @@ One Piece's Luffy pose predicted by onepose
 
 # Examples
 
-## Plot key points on an image
+## Plot key points on an image(Pretty version)
+
+```python
+import cv2
+import onepose
+
+if __name__ == '__main__':
+    img = cv2.imread('sample.png')
+    model = onepose.create_model()
+
+    keypoints = model(img)
+    onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
+    cv2.imshow('img', img)
+    cv2.waitKey(0)
+```
+
+## Plot key points on an image(Non-pretty version)
+
+Just understand how to access and process predicted key points
+
 ```python
 import cv2
 import onepose
