@@ -81,6 +81,7 @@ class Model(nn.Module):
         
         dataset_cfg = read_cfg(os.path.join(file_path.parent, 'datasets', model_config[model_name]['dataset_cfg']))
         self.keypoint_info = dataset_cfg.dataset_info['keypoint_info']
+        self.skeleton_info = dataset_cfg.dataset_info['skeleton_info']
 
     @torch.no_grad()
     @torch.inference_mode()
