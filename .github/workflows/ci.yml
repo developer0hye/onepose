@@ -49,11 +49,11 @@ jobs:
         for i in range(num_keypoints):
             print(f'Point {i} {model.keypoint_info[i]} (x, y) : {pts[i]} confidence: {pts_confidence[i]}')
         onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
-        os.makedirs('ci_artifacts', exist_ok=True)
-        cv2.imwrite('ci_artifacts/sample_output.png', img)
+        os.makedirs('/ci_artifacts', exist_ok=True)
+        cv2.imwrite('/ci_artifacts/sample_output.png', img)
         "
-    # - name: upload artifacts
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: outputs
-    #     path: ci_artifacts
+    - name: upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: outputs
+        path: /ci_artifacts
