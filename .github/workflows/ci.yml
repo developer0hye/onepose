@@ -27,4 +27,31 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install git+https://github.com/developer0hye/onepose.git
+    - name: Test Python
+      run: |
+        python -c "
+        import cv2
+        import onepose
+        import urllib
+        import numpy as np
+        
+        req = urllib.request.urlopen('https://raw.githubusercontent.com/developer0hye/onepose/main/onepose/assets/sample.png')
+        arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR) # 'Load it as it is'
+        
+        model = onepose.create_model()
+        
+        keypoints = model(img)
+        num_keypoints = len(keypoints['points'])
     
+        for i in range(num_keypoints):
+            print(f"Point {i} {model.keypoint_info[i]} (x, y) : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
+        onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
+        os.makedirs("ci_artifacts", exist_ok=True)
+        cv2.imwrite('ci_artifacts/sample_output.png', img)
+        "
+    # - name: upload artifacts
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: outputs
+    #     path: ci_artifacts
