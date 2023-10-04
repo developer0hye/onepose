@@ -88,18 +88,21 @@ Point 16 {'name': 'right_ankle', 'id': 16, 'color': [255, 128, 0], 'type': 'lowe
 ```
 
 ## Multiple-person pose estimation with YOLOv8
+
 ```bash
 pip install ultralytics
 ```
+
 ```python
 import cv2
 from ultralytics import YOLO
 import onepose
 
 detection_model = YOLO("yolov8m.pt")
+
 pose_estimiation_model = onepose.create_model()
 
-img = cv2.imread("multiple_person_sample.png")
+img = cv2.imread("multiple_person_sample.webp")
 draw_img = img.copy()
 
 results = detection_model(img)[0]
@@ -114,21 +117,16 @@ for cls, box, prob in zip(clses, boxes, probs):
     x1, y1, x2, y2 = box
     # crop image
     person_img = img[int(y1):int(y2), int(x1):int(x2)]
-    cv2.rectangle(draw_img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 3)
+    cv2.rectangle(draw_img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 1)
     
     keypoints = pose_estimiation_model(person_img)
     num_keypoints = len(keypoints['points'])
     
     for i in range(num_keypoints):
-        print(f"Point {i} (x, y)  : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
-        
-        if keypoints['confidence'][i] < 0.5:
-            color = (0, 0, 255)
-        else:
-            color = (0, 255, 0)
-        
-        cv2.circle(draw_img, (int(keypoints['points'][i][0] + x1), int(keypoints['points'][i][1] + y1)), 3, color, -1)
-
+        keypoints['points'][i][0] += x1
+        keypoints['points'][i][1] += y1
+    
+    onepose.visualize_keypoints(draw_img, keypoints, pose_estimiation_model.keypoint_info, pose_estimiation_model.skeleton_info)
 cv2.imshow("draw_img", draw_img)
 cv2.waitKey(0)
 ```
