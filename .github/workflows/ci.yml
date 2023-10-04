@@ -57,3 +57,4 @@ jobs:
       with:
         name: outputs
         path: ci_artifacts
+        retention-days: 1
