@@ -34,6 +34,7 @@ jobs:
         import onepose
         import urllib
         import numpy as np
+        import os
         
         req = urllib.request.urlopen('https://raw.githubusercontent.com/developer0hye/onepose/main/onepose/assets/sample.png')
         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
@@ -43,11 +44,12 @@ jobs:
         
         keypoints = model(img)
         num_keypoints = len(keypoints['points'])
-    
+        pts = keypoints['points']
+        pts_confidence = keypoints['confidence']
         for i in range(num_keypoints):
-            print(f"Point {i} {model.keypoint_info[i]} (x, y) : {keypoints['points'][i]} confidence: {keypoints['confidence'][i]}")
+            print(f'Point {i} {model.keypoint_info[i]} (x, y) : {pts[i]} confidence: {pts_confidence[i]}')
         onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
-        os.makedirs("ci_artifacts", exist_ok=True)
+        os.makedirs('ci_artifacts', exist_ok=True)
         cv2.imwrite('ci_artifacts/sample_output.png', img)
         "
     # - name: upload artifacts
