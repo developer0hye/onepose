@@ -186,6 +186,42 @@ def transform_preds(coords, center, scale, output_size, use_udp=False):
 
     return target_coords
 
+def _taylor(heatmap, coord):
+    """Distribution aware coordinate decoding method.
+
+    Note:
+        - heatmap height: H
+        - heatmap width: W
+
+    Args:
+        heatmap (np.ndarray[H, W]): Heatmap of a particular joint type.
+        coord (np.ndarray[2,]): Coordinates of the predicted keypoints.
+
+    Returns:
+        np.ndarray[2,]: Updated coordinates.
+    """
+    H, W = heatmap.shape[:2]
+    px, py = int(coord[0]), int(coord[1])
+    if 1 < px < W - 2 and 1 < py < H - 2:
+        dx = 0.5 * (heatmap[py][px + 1] - heatmap[py][px - 1])
+        dy = 0.5 * (heatmap[py + 1][px] - heatmap[py - 1][px])
+        dxx = 0.25 * (
+            heatmap[py][px + 2] - 2 * heatmap[py][px] + heatmap[py][px - 2])
+        dxy = 0.25 * (
+            heatmap[py + 1][px + 1] - heatmap[py - 1][px + 1] -
+            heatmap[py + 1][px - 1] + heatmap[py - 1][px - 1])
+        dyy = 0.25 * (
+            heatmap[py + 2 * 1][px] - 2 * heatmap[py][px] +
+            heatmap[py - 2 * 1][px])
+        derivative = np.array([[dx], [dy]])
+        hessian = np.array([[dxx, dxy], [dxy, dyy]])
+        if dxx * dyy - dxy**2 != 0:
+            hessianinv = np.linalg.inv(hessian)
+            offset = -hessianinv @ derivative
+            offset = np.squeeze(np.array(offset.T), axis=0)
+            coord += offset
+    return coord
+
 def keypoints_from_heatmaps(heatmaps,
                             center,
                             scale,
@@ -301,30 +337,30 @@ def keypoints_from_heatmaps(heatmaps,
         else:
             raise ValueError('target_type should be either '
                              "'GaussianHeatmap' or 'CombinedTarget'")
-    # else:
-    #     preds, maxvals = _get_max_preds(heatmaps)
-    #     if post_process == 'unbiased':  # alleviate biased coordinate
-    #         # apply Gaussian distribution modulation.
-    #         heatmaps = np.log(
-    #             np.maximum(_gaussian_blur(heatmaps, kernel), 1e-10))
-    #         for n in range(N):
-    #             for k in range(K):
-    #                 preds[n][k] = _taylor(heatmaps[n][k], preds[n][k])
-    #     elif post_process is not None:
-    #         # add +/-0.25 shift to the predicted locations for higher acc.
-    #         for n in range(N):
-    #             for k in range(K):
-    #                 heatmap = heatmaps[n][k]
-    #                 px = int(preds[n][k][0])
-    #                 py = int(preds[n][k][1])
-    #                 if 1 < px < W - 1 and 1 < py < H - 1:
-    #                     diff = np.array([
-    #                         heatmap[py][px + 1] - heatmap[py][px - 1],
-    #                         heatmap[py + 1][px] - heatmap[py - 1][px]
-    #                     ])
-    #                     preds[n][k] += np.sign(diff) * .25
-    #                     if post_process == 'megvii':
-    #                         preds[n][k] += 0.5
+    else:
+        preds, maxvals = _get_max_preds(heatmaps)
+        if post_process == 'unbiased':  # alleviate biased coordinate
+            # apply Gaussian distribution modulation.
+            heatmaps = np.log(
+                np.maximum(_gaussian_blur(heatmaps, kernel), 1e-10))
+            for n in range(N):
+                for k in range(K):
+                    preds[n][k] = _taylor(heatmaps[n][k], preds[n][k])
+        elif post_process is not None:
+            # add +/-0.25 shift to the predicted locations for higher acc.
+            for n in range(N):
+                for k in range(K):
+                    heatmap = heatmaps[n][k]
+                    px = int(preds[n][k][0])
+                    py = int(preds[n][k][1])
+                    if 1 < px < W - 1 and 1 < py < H - 1:
+                        diff = np.array([
+                            heatmap[py][px + 1] - heatmap[py][px - 1],
+                            heatmap[py + 1][px] - heatmap[py - 1][px]
+                        ])
+                        preds[n][k] += np.sign(diff) * .25
+                        if post_process == 'megvii':
+                            preds[n][k] += 0.5
 
     # Transform back to the image
     for i in range(N):
