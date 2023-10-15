@@ -13,44 +13,62 @@ model_config = {
     'ViTPose_base_simple_coco': {
         'model_cfg': 'ViTPose_base_simple_coco_256x192.py',
         'dataset_cfg': 'coco.py',
-        'pth': 'vitpose-b-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-b-simple_half.pth',
         'hash': '0408c829e344fe6f9d61eb16db5c863f'
     },
     'ViTPose_large_simple_coco': {
         'model_cfg': 'ViTPose_large_simple_coco_256x192.py',
         'dataset_cfg': 'coco.py',
-        'pth': 'vitpose-l-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-l-simple_half.pth',
         'hash': '6b35d98cdf0ac4838dbe9f4bb98dd38f'
     },
     'ViTPose_huge_simple_coco': {
         'model_cfg': 'ViTPose_huge_simple_coco_256x192.py',
         'dataset_cfg': 'coco.py',
-        'pth': 'vitpose-h-simple_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-h-simple_half.pth',
         'hash': '319c1bf933f677bce2ad33da21304866'
     },
     'ViTPose_base_mpii': {
         'model_cfg': 'ViTPose_base_mpii_256x192.py',
         'dataset_cfg': 'mpii.py',
-        'pth': 'vitpose-b-multi-mpii_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-b-multi-mpii_half.pth',
         'hash': '475eaab9c8fd78df77729cac7229c3e7'
     },
     'ViTPose_large_mpii': {
         'model_cfg': 'ViTPose_large_mpii_256x192.py',
         'dataset_cfg': 'mpii.py',
-        'pth': 'vitpose-l-multi-mpii_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-l-multi-mpii_half.pth',
         'hash': '1c7a3a6d40e775b2ca376090bf8f55ed'
     },
     'ViTPose_huge_mpii': {
         'model_cfg': 'ViTPose_huge_mpii_256x192.py',
         'dataset_cfg': 'mpii.py',
-        'pth': 'vitpose-h-multi-mpii_half.pth',
         'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/vitpose-h-multi-mpii_half.pth',
         'hash': '38a0335fbc749c1bfb6b60f0b13e5c93'
+    },
+    'ViTPose+_small_coco_wholebody': {
+        'model_cfg': 'ViTPose_small_wholebody_256x192.py',
+        'dataset_cfg': 'coco_wholebody.py',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/splitted_vitpose+_small_coco_wholebody_half.pth',
+        'hash': 'cfcd5161321e4ed8c14c9fd62e3655af'
+    },
+    'ViTPose+_base_coco_wholebody': {
+        'model_cfg': 'ViTPose_base_wholebody_256x192.py',
+        'dataset_cfg': 'coco_wholebody.py',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/splitted_vitpose+_base_coco_wholebody_half.pth',
+        'hash': 'f454d7d10dc15325f072d56bd658760e'
+    },
+    'ViTPose+_large_coco_wholebody': {
+        'model_cfg': 'ViTPose_large_wholebody_256x192.py',
+        'dataset_cfg': 'coco_wholebody.py',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/splitted_vitpose+_large_coco_wholebody_half.pth',
+        'hash': 'cb66cedb6ac06bdd8ed9ca3b9c4cf8b7'
+    },
+    'ViTPose+_huge_coco_wholebody': {
+        'model_cfg': 'ViTPose_huge_wholebody_256x192.py',
+        'dataset_cfg': 'coco_wholebody.py',
+        'url': 'https://github.com/developer0hye/onepose/releases/download/1.0.0/splitted_vitpose+_huge_coco_wholebody_half.pth',
+        'hash': '8b9bea9e0377561c201fd9e0f0973afe'
     },
 }
 
@@ -59,20 +77,22 @@ class Model(nn.Module):
                  model_name: str = 'ViTPose_huge_simple_coco') -> None:
         super().__init__()
 
-        self.transforms = ComposeTransforms([
-            BGR2RGB(),
-            TopDownAffine(use_udp=True),
-            ToTensor(),
-            NormalizeTensor()
-        ])
-
         file_path = pathlib.Path(os.path.abspath(__file__)).parent
         
         self.model_cfg = read_cfg(os.path.join(file_path, 'configs', model_config[model_name]['model_cfg']))
         self.model = vitpose.ViTPose(self.model_cfg.model)
-        
-        os.makedirs(os.path.join(file_path, 'weights'), exist_ok=True)
-        ckpt = os.path.join(file_path, 'weights', model_config[model_name]['pth'])
+
+        self.use_udp = self.model_cfg.model['test_cfg'].get('use_udp', False)
+        self.transforms = ComposeTransforms([
+            BGR2RGB(),
+            TopDownAffine(use_udp=self.use_udp),
+            ToTensor(),
+            NormalizeTensor()
+        ])
+
+        weights_folder = os.path.join(file_path, 'weights')
+        os.makedirs(weights_folder, exist_ok=True)
+        ckpt = os.path.join(weights_folder, model_config[model_name]['url'].split('/')[-1])
         download_weights(model_config[model_name]['url'], 
                          ckpt, 
                          model_config[model_name]['hash'])
@@ -114,7 +134,7 @@ class Model(nn.Module):
                                       post_process='default', 
                                       kernel=11, 
                                       valid_radius_factor=0.0546875, 
-                                      use_udp=True, 
+                                      use_udp=self.use_udp, 
                                       target_type='GaussianHeatmap')
         out = out[0]
         maxvals = maxvals[0]
