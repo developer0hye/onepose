@@ -36,21 +36,22 @@ jobs:
         import numpy as np
         import os
         
+        os.makedirs('ci_artifacts', exist_ok=True)
+        
         req = urllib.request.urlopen('https://raw.githubusercontent.com/developer0hye/onepose/main/onepose/assets/sample.png')
         arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-        img = cv2.imdecode(arr, cv2.IMREAD_COLOR) # 'Load it as it is'
         
-        model = onepose.create_model()
-        
-        keypoints = model(img)
-        num_keypoints = len(keypoints['points'])
-        pts = keypoints['points']
-        pts_confidence = keypoints['confidence']
-        for i in range(num_keypoints):
-            print(f'Point {i} {model.keypoint_info[i]} (x, y) : {pts[i]} confidence: {pts_confidence[i]}')
-        onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
-        os.makedirs('ci_artifacts', exist_ok=True)
-        cv2.imwrite('ci_artifacts/sample_output.png', img)
+        for model_name in onepose.list_models():
+          model = onepose.create_model(model_name)
+          img = cv2.imdecode(arr, cv2.IMREAD_COLOR) # 'Load it as it is'
+          keypoints = model(img)
+          num_keypoints = len(keypoints['points'])
+          pts = keypoints['points']
+          pts_confidence = keypoints['confidence']
+          for i in range(num_keypoints):
+              print(f'Point {i} {model.keypoint_info[i]} (x, y) : {pts[i]} confidence: {pts_confidence[i]}')
+          onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
+          cv2.imwrite(f'ci_artifacts/sample_{model_name}_output.png', img)
         "
     - name: upload artifacts
       uses: actions/upload-artifact@v3
