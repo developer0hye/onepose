@@ -13,7 +13,7 @@ img = cv2.imread("sample.png")
 keypoints = onepose.create_model().to("cuda")(img)
 ```
 
-![sample_vitpose_h_simple_coco_output](./onepose/assets/sample_vitpose_h_simple_coco_output.png)
+![sample_all_vis](./onepose/assets/sample_all_vis.png)
 
 One Piece's Luffy pose predicted by onepose
 
