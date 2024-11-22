@@ -73,12 +73,12 @@ model_config = {
 }
 
 class Model(nn.Module):
-    def __init__(self, 
+    def __init__(self,
                  model_name: str = 'ViTPose_huge_simple_coco') -> None:
         super().__init__()
 
         file_path = pathlib.Path(os.path.abspath(__file__)).parent
-        
+
         self.model_cfg = read_cfg(os.path.join(file_path, 'configs', model_config[model_name]['model_cfg']))
         self.model = vitpose.ViTPose(self.model_cfg.model)
 
@@ -93,26 +93,30 @@ class Model(nn.Module):
         weights_folder = os.path.join(file_path, 'weights')
         os.makedirs(weights_folder, exist_ok=True)
         ckpt = os.path.join(weights_folder, model_config[model_name]['url'].split('/')[-1])
-        download_weights(model_config[model_name]['url'], 
-                         ckpt, 
+        download_weights(model_config[model_name]['url'],
+                         ckpt,
                          model_config[model_name]['hash'])
         self.model.load_state_dict(torch.load(ckpt, map_location='cpu'))
         self.model.eval()
-        
+
         dataset_cfg = read_cfg(os.path.join(file_path.parent, 'datasets', model_config[model_name]['dataset_cfg']))
         self.keypoint_info = dataset_cfg.dataset_info['keypoint_info']
         self.skeleton_info = dataset_cfg.dataset_info['skeleton_info']
 
     @torch.no_grad()
     @torch.inference_mode()
-    def forward(self, x: np.ndarray) -> np.ndarray:
+    def forward(self, x: Union[List[np.ndarray], np.ndarray]) -> np.ndarray:
         if self.training:
             self.eval()
-        
+
         device = next(self.parameters()).device
-        
-        img_height, img_width = x.shape[:2]
-        center, scale = _box2cs(self.model_cfg.data_cfg['image_size'], [0, 0, img_width, img_height])      
+
+        if isinstance(x, np.ndarray):
+            x = [x]
+        batch_size = len(x)
+
+        img_height, img_width = x[0].shape[:2]
+        center, scale = _box2cs(self.model_cfg.data_cfg['image_size'], [0, 0, img_width, img_height])
 
         results = {'img': x,
                    'rotation': 0,
@@ -122,22 +126,28 @@ class Model(nn.Module):
                    }
 
         results = self.transforms(results)
-        results['img'] = results['img'].to(device)
-        
-        out = self.model(results['img'][None, ...])
+        batch_images = torch.stack(results["img"], dim=0).to(device)
+        #results['img'] = results['img'].to(device)
+
+        #out = self.model(results['img'][None, ...])
+        out = self.model(batch_images)
         out = out.cpu().numpy()
-        
-        out, maxvals = keypoints_from_heatmaps(out, 
-                                      center=[center],
-                                      scale=[scale], 
-                                      unbiased=False, 
-                                      post_process='default', 
-                                      kernel=11, 
-                                      valid_radius_factor=0.0546875, 
-                                      use_udp=self.use_udp, 
+
+        out, maxvals = keypoints_from_heatmaps(out,
+                                      center=np.tile(center, (batch_size, 1)),
+                                      scale=np.tile(scale, (batch_size, 1)),
+                                      unbiased=False,
+                                      post_process='default',
+                                      kernel=11,
+                                      valid_radius_factor=0.0546875,
+                                      use_udp=self.use_udp,
                                       target_type='GaussianHeatmap')
-        out = out[0]
-        maxvals = maxvals[0]
+
+        # To keep compatibility with the original single image implementation
+        if batch_size == 1:
+            out = out[0]
+            maxvals = maxvals[0]
+
         out = {'points': out, 'confidence': maxvals}
         return out
 
