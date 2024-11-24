@@ -35,6 +35,45 @@ if __name__ == '__main__':
     cv2.waitKey(0)
 ```
 
+`onepose` supports PIL image as well.
+
+```python
+import cv2
+import onepose
+from PIL import Image
+
+if __name__ == '__main__':
+    img = Image.open('sample.png')
+    model = onepose.create_model()
+    
+    keypoints = model(img)
+    img = np.array(img)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
+    cv2.imshow('img', img)
+    cv2.waitKey(0)
+```
+
+`onepose` also supports batch processing.
+
+```python
+images = [cv2.imread('sample.png'), Image.open('sample.png')]
+keypoints = model(images)
+
+for i, (img, keypoints) in enumerate(zip(images, batch_keypoints)):
+    # Convert PIL Image to numpy array if needed
+    if isinstance(img, Image.Image):
+        img = np.array(img)
+        if img.ndim == 2 or (img.ndim == 3 and img.shape[2] == 1):
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        else:
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        
+    onepose.visualize_keypoints(img, keypoints, model.keypoint_info, model.skeleton_info)
+    cv2.imshow(f'Batch Result {i}', img)
+
+```
+
 ## Plot key points on an image(Non-pretty version)
 
 Just understand how to access and process predicted key points
