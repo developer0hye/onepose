@@ -9,6 +9,6 @@ from setuptools import find_packages, setup
 setup(
     name='onepose',
     version='1.0',
-    install_requires=['opencv-python', 'torch', 'torchvision', 'tqdm', 'numpy'],
+    install_requires=['opencv-python', 'torch', 'torchvision', 'tqdm', 'numpy', 'Pillow'],
     packages=find_packages(exclude='notebooks')
 )
