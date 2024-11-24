@@ -58,7 +58,7 @@ if __name__ == '__main__':
 
 ```python
 images = [cv2.imread('sample.png'), Image.open('sample.png')]
-keypoints = model(images)
+batch_keypoints = model(images)
 
 for i, (img, keypoints) in enumerate(zip(images, batch_keypoints)):
     # Convert PIL Image to numpy array if needed
